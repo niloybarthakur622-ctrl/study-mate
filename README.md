@@ -46,7 +46,7 @@ StudyMate uses the **Google Gemini API** for the Doubt Solver.
 
 1. In Replit, open the **Secrets** tab (🔒 icon on the left sidebar).
 2. Add a new secret:
-   - **Key:** `GEMINI_API_KEY`
+   - **Key:** `AQ.Ab8RN6J3OIybYaJrY8HtX3xYNXnfYfkHz2v5yRXwVsj5tBpBjwAPI`
    - **Value:** Your Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
 
 > ⚠️ Never paste your API key directly in the code. Always use Replit Secrets.
