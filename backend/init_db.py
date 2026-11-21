@@ -2,7 +2,8 @@ import sqlite3
 import os
 
 if os.environ.get("VERCEL"):
-    DB_PATH = "/tmp/database.db"
+    import tempfile
+    DB_PATH = os.path.join(tempfile.gettempdir(), "database.db")
 else:
     DB_PATH = os.path.join(os.path.dirname(__file__), "database.db")
 
