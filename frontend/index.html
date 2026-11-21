@@ -228,8 +228,9 @@ a:hover{text-decoration:underline}
 /* ═══════════════════════════════════════════════════
    DOUBT SOLVER
 ═══════════════════════════════════════════════════ */
-.doubt-fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;width:56px;height:56px;border-radius:50%;background:var(--teal);color:#fff;border:none;font-size:1.5rem;box-shadow:0 4px 16px rgba(0,137,123,.4);transition:all .2s;display:none}
+.doubt-fab{position:fixed;bottom:5.5rem;right:1.5rem;z-index:500;width:58px;height:58px;border-radius:50%;background:var(--teal);color:#fff;border:2px solid rgba(255,255,255,.4);font-size:1.5rem;box-shadow:0 4px 18px rgba(0,137,123,.45);display:none;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;transition:transform .15s,box-shadow .15s}
 .doubt-fab:hover{background:var(--teal-dark);transform:scale(1.08)}
+.doubt-fab.dragging{cursor:grabbing;transform:scale(1.12);box-shadow:0 8px 28px rgba(0,0,0,.35)}
 .doubt-fab.visible{display:flex;align-items:center;justify-content:center}
 .doubt-panel{position:fixed;top:0;right:0;width:100%;max-width:400px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.18);z-index:600;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
 .doubt-panel.open{transform:translateX(0)}
@@ -812,6 +813,19 @@ function openTestView(){
   const tv = $("test-view");
   tv.classList.add("open");
   $("tv-name").textContent = state.currentTest.test.name;
+
+  // Move doubt fab up to top-right if it sits near the bottom to avoid obscuring Next/Submit
+  const fab = $("doubt-fab");
+  if(fab){
+    const rect = fab.getBoundingClientRect();
+    if(rect.top > window.innerHeight - 180){
+      fab.style.bottom = "auto";
+      fab.style.right = "1.5rem";
+      fab.style.top = "5.5rem";
+      fab.style.left = "auto";
+    }
+  }
+
   renderCurrentQuestion();
 }
 
@@ -983,7 +997,89 @@ function closeDoubt(){
   $("doubt-backdrop").classList.remove("open");
 }
 
-$("doubt-fab").addEventListener("click",()=>openDoubt());
+// Draggable Doubt Floating Action Button
+(function initDraggableFab(fab){
+  if(!fab) return;
+  let isDragging = false;
+  let startX = 0, startY = 0;
+  let initialLeft = 0, initialTop = 0;
+  let hasMoved = false;
+
+  function onPointerDown(e){
+    if(e.button !== undefined && e.button !== 0) return;
+    isDragging = true;
+    hasMoved = false;
+    fab.classList.add("dragging");
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    startX = clientX;
+    startY = clientY;
+
+    const rect = fab.getBoundingClientRect();
+    initialLeft = rect.left;
+    initialTop = rect.top;
+
+    fab.style.bottom = "auto";
+    fab.style.right = "auto";
+    fab.style.left = initialLeft + "px";
+    fab.style.top = initialTop + "px";
+
+    window.addEventListener("mousemove", onPointerMove, { passive: false });
+    window.addEventListener("mouseup", onPointerUp);
+    window.addEventListener("touchmove", onPointerMove, { passive: false });
+    window.addEventListener("touchend", onPointerUp);
+  }
+
+  function onPointerMove(e){
+    if(!isDragging) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+
+    if(Math.abs(dx) > 4 || Math.abs(dy) > 4){
+      hasMoved = true;
+    }
+
+    if(hasMoved){
+      if(e.cancelable) e.preventDefault();
+      const fabWidth = fab.offsetWidth || 58;
+      const fabHeight = fab.offsetHeight || 58;
+      let newLeft = initialLeft + dx;
+      let newTop = initialTop + dy;
+
+      newLeft = Math.max(10, Math.min(window.innerWidth - fabWidth - 10, newLeft));
+      newTop = Math.max(10, Math.min(window.innerHeight - fabHeight - 10, newTop));
+
+      fab.style.left = newLeft + "px";
+      fab.style.top = newTop + "px";
+    }
+  }
+
+  function onPointerUp(){
+    if(!isDragging) return;
+    isDragging = false;
+    fab.classList.remove("dragging");
+    window.removeEventListener("mousemove", onPointerMove);
+    window.removeEventListener("mouseup", onPointerUp);
+    window.removeEventListener("touchmove", onPointerMove);
+    window.removeEventListener("touchend", onPointerUp);
+  }
+
+  fab.addEventListener("mousedown", onPointerDown);
+  fab.addEventListener("touchstart", onPointerDown, { passive: false });
+
+  fab.addEventListener("click", (e)=>{
+    if(hasMoved){
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      hasMoved = false;
+      return;
+    }
+    openDoubt();
+  });
+})(document.getElementById("doubt-fab"));
 $("doubt-close-btn").addEventListener("click",closeDoubt);
 $("doubt-backdrop").addEventListener("click",closeDoubt);
 
