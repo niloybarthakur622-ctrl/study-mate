@@ -48,7 +48,8 @@ def get_pdf(filename):
 
 if os.environ.get("VERCEL"):
     import shutil
-    DB_PATH = "/tmp/database.db"
+    import tempfile
+    DB_PATH = os.path.join(tempfile.gettempdir(), "database.db")
     orig_db = os.path.join(os.path.dirname(__file__), "database.db")
     if not os.path.exists(DB_PATH) and os.path.exists(orig_db):
         try:
