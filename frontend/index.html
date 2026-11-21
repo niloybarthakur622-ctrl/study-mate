@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StudyMate — NEET & JEE Practice</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   RESET & VARIABLES
+═══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root {
+  --blue-dark:#1a237e;--blue:#283593;--blue-mid:#3949ab;--blue-light:#e8eaf6;
+  --teal-dark:#00695c;--teal:#00897b;--teal-light:#e0f2f1;
+  --neet:#2e7d32;--neet-light:#e8f5e9;--neet-mid:#43a047;
+  --jee:#1565c0;--jee-light:#e3f2fd;--jee-mid:#1976d2;
+  --white:#ffffff;--gray-50:#fafafa;--gray-100:#f5f5f5;--gray-200:#eeeeee;
+  --gray-400:#bdbdbd;--gray-600:#757575;--gray-800:#424242;--gray-900:#212121;
+  --danger:#c62828;--danger-light:#ffebee;
+  --success:#2e7d32;--success-light:#e8f5e9;
+  --warn:#f57f17;--warn-light:#fff8e1;
+  --radius:12px;--radius-sm:8px;--shadow:0 2px 12px rgba(0,0,0,.12);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.18);
+  --exam-accent:var(--blue-mid);--exam-light:var(--blue-light);
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--gray-100);color:var(--gray-900);min-height:100vh;line-height:1.5}
+img,svg{display:block}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+a{color:var(--teal-dark);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ═══════════════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════════════ */
+.hidden{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}
+.justify-between{justify-content:space-between}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}
+.w-full{width:100%}.text-center{text-align:center}
+.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+#toast-container{position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{background:var(--gray-900);color:#fff;padding:.75rem 1.25rem;border-radius:var(--radius-sm);font-size:.9rem;box-shadow:var(--shadow-lg);opacity:0;transform:translateX(100%);transition:all .3s ease;pointer-events:all;max-width:320px}
+.toast.show{opacity:1;transform:translateX(0)}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+.toast.warn{background:var(--warn)}
+
+/* ═══════════════════════════════════════════════════
+   SPINNER
+═══════════════════════════════════════════════════ */
+.spinner{width:24px;height:24px;border:3px solid var(--gray-200);border-top-color:var(--exam-accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;z-index:8000;flex-direction:column;gap:1rem}
+.loading-overlay .spinner{width:48px;height:48px;border-width:5px}
+
+/* ═══════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.65rem 1.4rem;border:none;border-radius:var(--radius-sm);font-size:.95rem;font-weight:600;transition:all .2s;line-height:1.3}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{background:var(--exam-accent);color:#fff}
+.btn-primary:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.btn-outline{background:transparent;color:var(--exam-accent);border:2px solid var(--exam-accent)}
+.btn-outline:hover:not(:disabled){background:var(--exam-light)}
+.btn-ghost{background:transparent;color:var(--gray-600);border:1px solid var(--gray-200)}
+.btn-ghost:hover:not(:disabled){background:var(--gray-100)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover:not(:disabled){filter:brightness(1.1)}
+.btn-sm{padding:.4rem .9rem;font-size:.85rem}
+.btn-lg{padding:.85rem 2rem;font-size:1.05rem}
+.btn-block{width:100%}
+
+/* ═══════════════════════════════════════════════════
+   FORMS
+═══════════════════════════════════════════════════ */
+.form-group{display:flex;flex-direction:column;gap:.35rem;margin-bottom:1.1rem}
+.form-label{font-weight:600;font-size:.9rem;color:var(--gray-800)}
+.form-input{padding:.7rem 1rem;border:2px solid var(--gray-200);border-radius:var(--radius-sm);font-size:1rem;transition:border-color .2s;background:#fff}
+.form-input:focus{outline:none;border-color:var(--exam-accent)}
+.form-error{color:var(--danger);font-size:.82rem;font-weight:500}
+.radio-group{display:flex;gap:.75rem;flex-wrap:wrap}
+.radio-card{flex:1;min-width:120px}
+.radio-card input[type=radio]{display:none}
+.radio-card label{display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.65rem 1rem;border:2px solid var(--gray-200);border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:.95rem;transition:all .2s;background:#fff;text-align:center}
+.radio-card input[type=radio]:checked+label{border-color:var(--exam-accent);background:var(--exam-light);color:var(--exam-accent)}
+
+/* ═══════════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════════ */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card-body{padding:1.25rem}
+.card-header{padding:1rem 1.25rem;border-bottom:1px solid var(--gray-200);font-weight:700;font-size:1.05rem}
+
+/* ═══════════════════════════════════════════════════
+   BADGES
+═══════════════════════════════════════════════════ */
+.badge{display:inline-flex;align-items:center;padding:.2rem .65rem;border-radius:999px;font-size:.78rem;font-weight:700;letter-spacing:.02em}
+.badge-physics{background:#e3f2fd;color:#1565c0}
+.badge-chemistry{background:#fce4ec;color:#880e4f}
+.badge-biology{background:#e8f5e9;color:#1b5e20}
+.badge-mathematics{background:#f3e5f5;color:#4a148c}
+.badge-year{background:#fff3e0;color:#e65100}
+.badge-pyq{background:#fffde7;color:#f57f17;border:1px solid #ffe082}
+.badge-practice{background:#f3e5f5;color:#6a1b9a}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN SYSTEM
+═══════════════════════════════════════════════════ */
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 1 — LOGIN
+═══════════════════════════════════════════════════ */
+#screen-login{background:linear-gradient(135deg,var(--blue-dark) 0%,var(--blue-mid) 50%,var(--teal-dark) 100%);display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-box{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:2.5rem 2rem;width:100%;max-width:440px}
+.login-logo{font-size:2.5rem;text-align:center;margin-bottom:.5rem}
+.login-title{text-align:center;font-size:1.8rem;font-weight:800;color:var(--blue-dark);margin-bottom:.25rem}
+.login-sub{text-align:center;color:var(--gray-600);font-size:.92rem;margin-bottom:1.75rem}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 2 — HOME
+═══════════════════════════════════════════════════ */
+.top-bar{background:var(--blue-dark);color:#fff;padding:.85rem 1.25rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.top-bar .brand{font-size:1.3rem;font-weight:800;letter-spacing:.02em}
+.top-bar .user-info{font-size:.85rem;opacity:.85;margin-top:.1rem}
+.home-banner{background:linear-gradient(135deg,var(--exam-accent) 0%,var(--blue-dark) 100%);color:#fff;padding:2rem 1.25rem;text-align:center}
+.home-banner h1{font-size:1.6rem;font-weight:800;margin-bottom:.4rem}
+.home-banner p{opacity:.85;font-size:.95rem}
+.home-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;padding:1.5rem 1.25rem;max-width:900px;margin:0 auto}
+.home-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.75rem 1.5rem;cursor:pointer;transition:all .25s;border:2px solid transparent;text-align:center}
+.home-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--exam-accent)}
+.home-card .card-icon{font-size:2.6rem;margin-bottom:.75rem}
+.home-card h3{font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:.35rem}
+.home-card p{font-size:.88rem;color:var(--gray-600)}
+
+/* ═══════════════════════════════════════════════════
+   PANELS (PYQs, Tests)
+═══════════════════════════════════════════════════ */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
+.panel-overlay.open{display:flex}
+.panel{background:#fff;border-radius:var(--radius);width:100%;max-width:800px;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;box-shadow:var(--shadow-lg);margin:auto}
+.panel-head{padding:1rem 1.25rem;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;border-radius:var(--radius) var(--radius) 0 0}
+.panel-head h2{font-size:1.2rem;font-weight:800;color:var(--blue-dark)}
+.panel-body{overflow-y:auto;flex:1;padding:1.25rem}
+.close-btn{background:none;border:none;font-size:1.5rem;color:var(--gray-600);line-height:1;padding:.25rem .5rem;border-radius:4px}
+.close-btn:hover{background:var(--gray-100)}
+
+/* Tabs */
+.tabs{display:flex;gap:.5rem;border-bottom:2px solid var(--gray-200);margin-bottom:1.25rem}
+.tab-btn{background:none;border:none;padding:.6rem 1.1rem;font-size:.95rem;font-weight:600;color:var(--gray-600);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab-btn.active{color:var(--exam-accent);border-bottom-color:var(--exam-accent)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* PYQ Cards */
+.pyq-card{border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:1rem;margin-bottom:.75rem;background:#fff;transition:box-shadow .2s}
+.pyq-card:hover{box-shadow:var(--shadow)}
+.pyq-card-header{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.5rem;flex-wrap:wrap}
+.pyq-card-body{color:var(--gray-800);font-size:.92rem;margin-bottom:.6rem}
+.pyq-card-footer{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+/* ═══════════════════════════════════════════════════
+   TEST PANEL
+═══════════════════════════════════════════════════ */
+.test-list-item{border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:1rem 1.1rem;margin-bottom:.75rem;background:#fff;display:flex;flex-direction:column;gap:.6rem;transition:box-shadow .2s}
+.test-list-item:hover{box-shadow:var(--shadow)}
+.test-list-item h4{font-weight:700;font-size:1rem}
+.subject-pills{display:flex;gap:.4rem;flex-wrap:wrap}
+.subject-pill{background:var(--gray-100);color:var(--gray-700);padding:.2rem .65rem;border-radius:999px;font-size:.8rem;font-weight:600}
+
+/* ── In-Test View ── */
+#test-view{position:fixed;inset:0;background:#fff;z-index:300;display:none;flex-direction:column;overflow:hidden}
+#test-view.open{display:flex}
+.test-toolbar{background:var(--blue-dark);color:#fff;padding:.85rem 1.25rem;display:flex;align-items:center;gap:1rem}
+.test-toolbar .test-name{flex:1;font-weight:700;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.test-progress-bar{height:5px;background:var(--blue-mid);position:relative;overflow:hidden}
+.test-progress-fill{height:100%;background:var(--teal);transition:width .4s ease}
+.test-content{flex:1;overflow-y:auto;padding:1.25rem;max-width:720px;margin:0 auto;width:100%}
+.question-block{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem}
+.question-num{font-size:.8rem;font-weight:700;color:var(--gray-600);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em}
+.question-text{font-size:1rem;font-weight:600;color:var(--gray-900);margin-bottom:.85rem;line-height:1.55}
+.options-list{display:flex;flex-direction:column;gap:.5rem}
+.option-label{display:flex;align-items:flex-start;gap:.75rem;padding:.7rem .9rem;border:2px solid var(--gray-200);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.95rem;line-height:1.4}
+.option-label:hover{border-color:var(--exam-accent);background:var(--exam-light)}
+.option-label input[type=radio]{display:none}
+.option-label.selected{border-color:var(--exam-accent);background:var(--exam-light);font-weight:600}
+.option-letter{font-weight:800;color:var(--exam-accent);min-width:1.3rem}
+.test-nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-top:1px solid var(--gray-200);background:#fff;gap:.75rem;flex-wrap:wrap}
+.q-counter{font-size:.9rem;color:var(--gray-600);font-weight:600}
+
+/* ── Results View ── */
+#results-view{position:fixed;inset:0;background:#fff;z-index:300;display:none;flex-direction:column;overflow:hidden}
+#results-view.open{display:flex}
+.results-header{background:linear-gradient(135deg,var(--blue-dark),var(--blue-mid));color:#fff;padding:1.5rem 1.25rem;text-align:center}
+.score-circle{width:120px;height:120px;border-radius:50%;border:6px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;flex-direction:column;background:rgba(255,255,255,.1)}
+.score-num{font-size:2.4rem;font-weight:900;line-height:1}
+.score-denom{font-size:1rem;opacity:.8}
+.score-stats{display:flex;justify-content:center;gap:2rem;margin-top:.75rem;flex-wrap:wrap}
+.score-stat{text-align:center}
+.score-stat span{display:block}
+.score-stat .val{font-size:1.6rem;font-weight:800}
+.score-stat .lbl{font-size:.8rem;opacity:.8}
+.results-body{flex:1;overflow-y:auto;padding:1.25rem;max-width:720px;margin:0 auto;width:100%}
+.weak-topics-block{background:var(--warn-light);border:1px solid #ffe082;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1.25rem}
+.weak-topics-block h4{font-weight:700;color:var(--warn);margin-bottom:.5rem}
+.weak-topic-pill{background:#fff;border:1px solid #ffe082;border-radius:999px;padding:.25rem .75rem;font-size:.85rem;font-weight:600;color:var(--warn)}
+.review-item{border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:1rem;margin-bottom:.75rem;background:#fff}
+.review-item.correct{border-left:4px solid var(--success)}
+.review-item.incorrect{border-left:4px solid var(--danger)}
+.review-item.blank{border-left:4px solid var(--gray-400)}
+.review-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}
+.review-label.correct{color:var(--success)}
+.review-label.incorrect{color:var(--danger)}
+.review-label.blank{color:var(--gray-600)}
+.review-q{font-size:.95rem;font-weight:600;margin-bottom:.6rem;line-height:1.4}
+.review-options{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.5rem}
+.review-option{padding:.4rem .7rem;border-radius:4px;font-size:.88rem;border:1px solid transparent}
+.review-option.is-correct{background:#e8f5e9;border-color:#a5d6a7;font-weight:700;color:var(--success)}
+.review-option.is-selected-wrong{background:#ffebee;border-color:#ef9a9a;color:var(--danger)}
+.review-explanation{background:var(--blue-light);border-radius:4px;padding:.6rem .8rem;font-size:.88rem;color:var(--blue-dark);margin-top:.4rem;font-style:italic}
+
+/* ═══════════════════════════════════════════════════
+   DOUBT SOLVER
+═══════════════════════════════════════════════════ */
+.doubt-fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;width:56px;height:56px;border-radius:50%;background:var(--teal);color:#fff;border:none;font-size:1.5rem;box-shadow:0 4px 16px rgba(0,137,123,.4);transition:all .2s;display:none}
+.doubt-fab:hover{background:var(--teal-dark);transform:scale(1.08)}
+.doubt-fab.visible{display:flex;align-items:center;justify-content:center}
+.doubt-panel{position:fixed;top:0;right:0;width:100%;max-width:400px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.18);z-index:600;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
+.doubt-panel.open{transform:translateX(0)}
+.doubt-head{background:var(--teal);color:#fff;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+.doubt-head h3{font-weight:800;font-size:1.05rem}
+.doubt-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem;background:var(--gray-50)}
+.msg{max-width:85%;border-radius:var(--radius-sm);padding:.7rem .9rem;font-size:.9rem;line-height:1.5;word-break:break-word}
+.msg.user{align-self:flex-end;background:var(--teal);color:#fff;border-radius:var(--radius-sm) 4px var(--radius-sm) var(--radius-sm)}
+.msg.ai{align-self:flex-start;background:#fff;border:1px solid var(--gray-200);border-radius:4px var(--radius-sm) var(--radius-sm) var(--radius-sm)}
+.msg.error-msg{background:var(--danger-light);color:var(--danger);border:1px solid #ef9a9a}
+.msg-typing{align-self:flex-start;background:#fff;border:1px solid var(--gray-200);border-radius:4px var(--radius-sm) var(--radius-sm) var(--radius-sm);padding:.7rem .9rem}
+.typing-dots{display:flex;gap:4px;align-items:center}
+.typing-dots span{width:8px;height:8px;background:var(--gray-400);border-radius:50%;animation:bounce .9s infinite}
+.typing-dots span:nth-child(2){animation-delay:.15s}
+.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.doubt-footer{padding:.85rem 1rem;border-top:1px solid var(--gray-200);display:flex;gap:.5rem;background:#fff}
+.doubt-input{flex:1;padding:.65rem .9rem;border:2px solid var(--gray-200);border-radius:var(--radius-sm);font-size:.92rem;resize:none;overflow:hidden;line-height:1.4;min-height:42px;max-height:120px}
+.doubt-input:focus{outline:none;border-color:var(--teal)}
+.doubt-send{background:var(--teal);color:#fff;border:none;border-radius:var(--radius-sm);padding:.65rem .9rem;font-size:1.1rem;line-height:1;min-width:42px}
+.doubt-send:hover:not(:disabled){background:var(--teal-dark)}
+.doubt-send:disabled{opacity:.5}
+.doubt-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:590;display:none}
+.doubt-backdrop.open{display:block}
+
+/* ═══════════════════════════════════════════════════
+   EMPTY STATES
+═══════════════════════════════════════════════════ */
+.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--gray-600)}
+.empty-state .icon{font-size:3rem;margin-bottom:.75rem}
+.empty-state h4{font-size:1.05rem;font-weight:700;margin-bottom:.35rem;color:var(--gray-800)}
+.empty-state p{font-size:.9rem}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════ */
+@media(max-width:600px){
+  .login-box{padding:1.75rem 1.25rem}
+  .home-banner h1{font-size:1.3rem}
+  .home-cards{grid-template-columns:1fr;padding:1rem}
+  .doubt-panel{max-width:100%}
+  .score-stats{gap:1.25rem}
+  .score-circle{width:100px;height:100px}
+  .score-num{font-size:2rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     TOAST CONTAINER
+══════════════════════════════════════════════════ -->
+<div id="toast-container" aria-live="polite"></div>
+
+<!-- ══════════════════════════════════════════════════
+     LOADING OVERLAY
+══════════════════════════════════════════════════ -->
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <span id="loading-text" style="color:var(--gray-600);font-weight:600">Loading…</span>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SCREEN 1 — LOGIN
+══════════════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">📚</div>
+    <h1 class="login-title">StudyMate</h1>
+    <p class="login-sub">Your smart companion for NEET &amp; JEE preparation</p>
+
+    <div class="form-group">
+      <label class="form-label" for="inp-name">Your Name</label>
+      <input class="form-input" id="inp-name" type="text" placeholder="e.g. Aarav Sharma" maxlength="60" autocomplete="name" />
+      <span class="form-error hidden" id="err-name"></span>
+    </div>
+
+    <div class="form-group">
+      <span class="form-label">Select Exam</span>
+      <div class="radio-group">
+        <div class="radio-card">
+          <input type="radio" name="exam" id="exam-neet" value="NEET" />
+          <label for="exam-neet">🩺 NEET</label>
+        </div>
+        <div class="radio-card">
+          <input type="radio" name="exam" id="exam-jee" value="JEE" />
+          <label for="exam-jee">⚙️ JEE</label>
+        </div>
+      </div>
+      <span class="form-error hidden" id="err-exam"></span>
+    </div>
+
+    <div class="form-group">
+      <span class="form-label">Class</span>
+      <div class="radio-group">
+        <div class="radio-card">
+          <input type="radio" name="class_level" id="cls-11" value="11" />
+          <label for="cls-11">Class 11</label>
+        </div>
+        <div class="radio-card">
+          <input type="radio" name="class_level" id="cls-12" value="12" />
+          <label for="cls-12">Class 12</label>
+        </div>
+      </div>
+      <span class="form-error hidden" id="err-class"></span>
+    </div>
+
+    <button class="btn btn-primary btn-block btn-lg mt-4" id="btn-login">
+      Start Studying →
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SCREEN 2 — HOME
+══════════════════════════════════════════════════ -->
+<div id="screen-home" class="screen">
+  <div class="top-bar flex items-center justify-between">
+    <div>
+      <div class="brand">📚 StudyMate</div>
+      <div class="user-info" id="topbar-info"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="btn-logout" style="color:#fff;border-color:rgba(255,255,255,.4)">Logout</button>
+  </div>
+
+  <div class="home-banner">
+    <h1 id="welcome-msg">Welcome back!</h1>
+    <p id="welcome-sub"></p>
+  </div>
+
+  <div class="home-cards">
+    <div class="home-card" id="card-pyqs" role="button" tabindex="0">
+      <div class="card-icon">📄</div>
+      <h3>PYQs</h3>
+      <p>Previous year questions from recent NEET/JEE exams</p>
+    </div>
+    <div class="home-card" id="card-tests" role="button" tabindex="0">
+      <div class="card-icon">✏️</div>
+      <h3>Practice Tests</h3>
+      <p>Three full-length 20-question practice tests</p>
+    </div>
+    <div class="home-card" id="card-doubt" role="button" tabindex="0">
+      <div class="card-icon">💬</div>
+      <h3>Doubt Solver</h3>
+      <p>Ask our AI tutor anything about your syllabus</p>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:.8rem">
+    StudyMate — Class 11 &amp; 12 NEET/JEE Practice Platform
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PYQ PANEL
+══════════════════════════════════════════════════ -->
+<div id="pyq-overlay" class="panel-overlay" role="dialog" aria-modal="true">
+  <div class="panel">
+    <div class="panel-head">
+      <h2>📄 Previous Year Questions</h2>
+      <button class="close-btn" data-close="pyq-overlay" aria-label="Close">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="tabs" id="pyq-tabs">
+        <button class="tab-btn active" data-year="2024">2024</button>
+        <button class="tab-btn" data-year="2023">2023</button>
+      </div>
+      <div id="pyq-tab-2024" class="tab-pane active">
+        <div id="pyq-list-2024"></div>
+      </div>
+      <div id="pyq-tab-2023" class="tab-pane">
+        <div id="pyq-list-2023"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TESTS PANEL
+══════════════════════════════════════════════════ -->
+<div id="tests-overlay" class="panel-overlay" role="dialog" aria-modal="true">
+  <div class="panel">
+    <div class="panel-head">
+      <h2>✏️ Practice Tests</h2>
+      <button class="close-btn" data-close="tests-overlay" aria-label="Close">✕</button>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:.88rem;color:var(--gray-600);margin-bottom:1rem">
+        All tests are original <span class="badge badge-practice">Practice Tests</span> — not official exam papers.
+        Each test has 20 questions worth 1 mark each.
+      </p>
+      <div id="tests-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     IN-TEST VIEW (full screen)
+══════════════════════════════════════════════════ -->
+<div id="test-view" role="dialog" aria-modal="true">
+  <div class="test-toolbar">
+    <span class="test-name" id="tv-name">Test Name</span>
+    <span style="font-size:.88rem;opacity:.8" id="tv-counter">Q 1 / 20</span>
+  </div>
+  <div class="test-progress-bar">
+    <div class="test-progress-fill" id="tv-progress" style="width:5%"></div>
+  </div>
+  <div class="test-content" id="tv-content"></div>
+  <div class="test-nav">
+    <button class="btn btn-ghost btn-sm" id="tv-prev">← Prev</button>
+    <span class="q-counter" id="tv-status"></span>
+    <button class="btn btn-primary btn-sm" id="tv-next">Next →</button>
+    <button class="btn btn-primary btn-sm hidden" id="tv-submit">Submit Test</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     RESULTS VIEW (full screen)
+══════════════════════════════════════════════════ -->
+<div id="results-view" role="dialog" aria-modal="true">
+  <div class="results-header">
+    <h2 style="font-size:1.1rem;margin-bottom:1rem;opacity:.85" id="rv-test-name">Test Results</h2>
+    <div class="score-circle">
+      <span class="score-num" id="rv-score">0</span>
+      <span class="score-denom" id="rv-total">/20</span>
+    </div>
+    <div class="score-stats">
+      <div class="score-stat">
+        <span class="val" id="rv-correct" style="color:#a5d6a7">0</span>
+        <span class="lbl">Correct</span>
+      </div>
+      <div class="score-stat">
+        <span class="val" id="rv-incorrect" style="color:#ef9a9a">0</span>
+        <span class="lbl">Incorrect</span>
+      </div>
+      <div class="score-stat">
+        <span class="val" id="rv-blank" style="color:rgba(255,255,255,.6)">0</span>
+        <span class="lbl">Blank</span>
+      </div>
+    </div>
+  </div>
+  <div class="results-body">
+    <div id="rv-weak-block" class="weak-topics-block hidden">
+      <h4>⚠️ Topics to Review</h4>
+      <div id="rv-weak-list" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem"></div>
+      <p style="font-size:.8rem;margin-top:.6rem;color:var(--warn)">Topics where you got 3 or more questions wrong.</p>
+    </div>
+    <h3 style="font-weight:700;margin-bottom:.75rem;color:var(--gray-900)">Answer Review</h3>
+    <div id="rv-review-list"></div>
+    <div class="flex gap-3 mt-4" style="flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" id="rv-doubt-btn">💬 Ask Doubt Solver</button>
+      <button class="btn btn-ghost btn-sm" id="rv-home-btn">← Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     DOUBT SOLVER
+══════════════════════════════════════════════════ -->
+<div id="doubt-backdrop" class="doubt-backdrop" role="presentation"></div>
+<div id="doubt-panel" class="doubt-panel" role="dialog" aria-modal="true" aria-label="Doubt Solver">
+  <div class="doubt-head">
+    <h3>💬 Doubt Solver</h3>
+    <button class="close-btn" id="doubt-close-btn" style="color:#fff" aria-label="Close">✕</button>
+  </div>
+  <div class="doubt-messages" id="doubt-messages">
+    <div class="msg ai">
+      👋 Hi! I'm StudyMate AI. Ask me anything about your Class 11–12 <strong>NEET</strong> or <strong>JEE</strong> syllabus — Physics, Chemistry, Biology, or Mathematics.
+    </div>
+  </div>
+  <div class="doubt-footer">
+    <textarea class="doubt-input" id="doubt-input" placeholder="Type your question here…" rows="1"></textarea>
+    <button class="doubt-send" id="doubt-send" aria-label="Send">➤</button>
+  </div>
+</div>
+
+<!-- Floating doubt button -->
+<button class="doubt-fab" id="doubt-fab" aria-label="Open Doubt Solver" title="Ask a doubt">💬</button>
+
+<script>
+/* ══════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════ */
+const API = window.location.origin.startsWith("http") ? window.location.origin : "http://localhost:5000";
+let state = {
+  student: null,
+  currentTest: null,       // {test, questions}
+  testAnswers: {},         // {question_id: 'a'|'b'|'c'|'d'}
+  currentQ: 0,
+  lastResults: null,
+};
+
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+function $(id){ return document.getElementById(id); }
+function $$(sel){ return document.querySelectorAll(sel); }
+
+function showScreen(id){
+  $$(".screen").forEach(s=>s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+function showToast(msg, type="info", duration=3500){
+  const c = $("toast-container");
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>t.classList.add("show")); });
+  setTimeout(()=>{
+    t.classList.remove("show");
+    setTimeout(()=>t.remove(), 350);
+  }, duration);
+}
+
+function setLoading(show, text="Loading…"){
+  const el = $("loading-overlay");
+  $("loading-text").textContent = text;
+  el.classList.toggle("hidden", !show);
+}
+
+async function apiFetch(path, opts={}){
+  const res = await fetch(API+path, {
+    headers: {"Content-Type":"application/json"},
+    ...opts,
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+function examAccent(exam){
+  document.documentElement.style.setProperty("--exam-accent", exam==="NEET" ? "var(--neet)" : "var(--jee)");
+  document.documentElement.style.setProperty("--exam-light", exam==="NEET" ? "var(--neet-light)" : "var(--jee-light)");
+}
+
+function subjectBadgeClass(subj){
+  const s = (subj||"").toLowerCase();
+  if(s.includes("physics")) return "badge-physics";
+  if(s.includes("chemistry")) return "badge-chemistry";
+  if(s.includes("biology")) return "badge-biology";
+  if(s.includes("math")) return "badge-mathematics";
+  return "";
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+/* ══════════════════════════════════════════════════
+   PERSIST / RESTORE SESSION
+══════════════════════════════════════════════════ */
+function saveStudent(student){
+  localStorage.setItem("sm_student", JSON.stringify(student));
+  state.student = student;
+}
+function loadStudent(){
+  try{ return JSON.parse(localStorage.getItem("sm_student")); } catch(e){ return null; }
+}
+function clearStudent(){
+  localStorage.removeItem("sm_student");
+  state.student = null;
+}
+
+/* ══════════════════════════════════════════════════
+   LOGIN
+══════════════════════════════════════════════════ */
+$("btn-login").addEventListener("click", handleLogin);
+$("inp-name").addEventListener("keydown", e => { if(e.key==="Enter") handleLogin(); });
+
+async function handleLogin(){
+  const name = $("inp-name").value.trim();
+  const exam = document.querySelector('input[name="exam"]:checked')?.value || "";
+  const cls  = document.querySelector('input[name="class_level"]:checked')?.value || "";
+
+  let valid = true;
+  function setErr(id, msg){ $(id).textContent=msg; $(id).classList.toggle("hidden",!msg); if(msg)valid=false; }
+  setErr("err-name",  !name ? "Please enter your name." : "");
+  setErr("err-exam",  !exam ? "Please select an exam." : "");
+  setErr("err-class", !cls  ? "Please select your class." : "");
+  if(!valid) return;
+
+  setLoading(true, "Setting up your account…");
+  try{
+    const student = await apiFetch("/api/login", {
+      method:"POST", body:JSON.stringify({name, exam, class_level: cls})
+    });
+    saveStudent(student);
+    enterHome(student);
+    showToast(`Welcome, ${student.name}! 🎉`, "success");
+  } catch(e){
+    showToast(e.message || "Login failed. Please try again.", "error");
+  } finally{ setLoading(false); }
+}
+
+/* ══════════════════════════════════════════════════
+   HOME
+══════════════════════════════════════════════════ */
+function enterHome(student){
+  examAccent(student.exam);
+  $("welcome-msg").textContent = `Welcome, ${student.name}! 👋`;
+  $("welcome-sub").textContent = `${student.exam} • Class ${student.class_level} — Let's ace it!`;
+  $("topbar-info").textContent = `${student.name} · ${student.exam} · Class ${student.class_level}`;
+  $("doubt-fab").classList.add("visible");
+  showScreen("screen-home");
+}
+
+$("btn-logout").addEventListener("click", ()=>{
+  if(confirm("Log out and start over?")){
+    clearStudent();
+    state = {student:null, currentTest:null, testAnswers:{}, currentQ:0, lastResults:null};
+    examAccent("NEET");
+    $("doubt-fab").classList.remove("visible");
+    closePyqPanel(); closeTestsPanel();
+    showScreen("screen-login");
+    showToast("Logged out.", "info");
+  }
+});
+
+/* ══════════════════════════════════════════════════
+   CARD CLICKS → OPEN PANELS
+══════════════════════════════════════════════════ */
+$("card-pyqs").addEventListener("click", openPyqPanel);
+$("card-pyqs").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" ") openPyqPanel(); });
+$("card-tests").addEventListener("click", openTestsPanel);
+$("card-tests").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" ") openTestsPanel(); });
+$("card-doubt").addEventListener("click", openDoubt);
+$("card-doubt").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" ") openDoubt(); });
+
+/* ══════════════════════════════════════════════════
+   PYQ PANEL
+══════════════════════════════════════════════════ */
+async function openPyqPanel(){
+  $("pyq-overlay").classList.add("open");
+  if($("pyq-list-2024").innerHTML === ""){
+    await loadPyqs();
+  }
+}
+function closePyqPanel(){ $("pyq-overlay").classList.remove("open"); }
+
+document.querySelectorAll('[data-close="pyq-overlay"]').forEach(b=>b.addEventListener("click",closePyqPanel));
+$("pyq-overlay").addEventListener("click",e=>{ if(e.target===$("pyq-overlay")) closePyqPanel(); });
+
+// Tabs
+$("pyq-tabs").addEventListener("click", e=>{
+  const btn = e.target.closest(".tab-btn");
+  if(!btn) return;
+  $$(".tab-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  const year = btn.dataset.year;
+  $$(".tab-pane").forEach(p=>p.classList.remove("active"));
+  $(`pyq-tab-${year}`).classList.add("active");
+});
+
+async function loadPyqs(){
+  const exam = state.student?.exam;
+  if(!exam) return;
+  setLoading(true, "Loading PYQs…");
+  try{
+    const list = await apiFetch(`/api/pyqs?exam=${exam}`);
+    renderPyqs(list);
+  } catch(e){
+    $("pyq-list-2024").innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h4>Couldn't load PYQs</h4><p>${escHtml(e.message)}</p></div>`;
+  } finally{ setLoading(false); }
+}
+
+function renderPyqs(list){
+  const exam = state.student?.exam || "NEET";
+  const byYear = {};
+  list.forEach(p=>{ (byYear[p.year]=byYear[p.year]||[]).push(p); });
+  [2024,2023].forEach(yr=>{
+    const el = $(`pyq-list-${yr}`);
+    const items = byYear[yr]||[];
+    if(!items.length){
+      el.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h4>No PYQs for ${yr}</h4><p>Check back soon.</p></div>`;
+      return;
+    }
+    const pdfFilename = `${exam.toLowerCase()}_${yr}_pyq.pdf`;
+    const bannerHtml = `
+      <div style="background:var(--exam-light);border:2px solid var(--exam-accent);border-radius:var(--radius-sm);padding:1rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+        <div>
+          <div style="font-weight:800;font-size:1.02rem;color:var(--gray-900)">📥 Official ${exam} ${yr} Question Paper &amp; Solutions</div>
+          <div style="font-size:.85rem;color:var(--gray-600);margin-top:.2rem">Verified questions, full answer keys, and step-by-step explanations in PDF format</div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <a href="${API}/api/pdf/${pdfFilename}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">👁️ Open PDF</a>
+          <a href="${API}/api/pdf/${pdfFilename}?download=1" download="${pdfFilename}" class="btn btn-primary btn-sm">📥 Download PDF</a>
+        </div>
+      </div>
+    `;
+
+    const cardsHtml = items.map(p=>{
+      const qPdf = p.pdf_file || pdfFilename;
+      return `
+      <div class="pyq-card">
+        <div class="pyq-card-header">
+          <span class="badge ${subjectBadgeClass(p.subject)}">${escHtml(p.subject)}</span>
+          <span class="badge badge-year">${p.year}</span>
+          <span class="badge badge-pyq">📋 PYQ</span>
+        </div>
+        <div class="pyq-card-body"><strong>Topic:</strong> ${escHtml(p.topic)}<br/><span style="color:var(--gray-600);font-size:.88rem">${escHtml(p.question_text)}</span></div>
+        <div class="pyq-card-footer">
+          <a href="${API}/api/pdf/${qPdf}?download=1" download="${qPdf}" class="btn btn-primary btn-sm">📥 Download Paper PDF</a>
+          <a href="${API}/api/pdf/${qPdf}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">👁️ View PDF</a>
+          <button class="btn btn-ghost btn-sm" onclick='openDoubt("${escHtml(p.topic)} (${escHtml(p.subject)})")'>💬 Ask Doubt</button>
+        </div>
+      </div>
+    `;}).join("");
+
+    el.innerHTML = bannerHtml + cardsHtml;
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   TESTS PANEL
+══════════════════════════════════════════════════ */
+async function openTestsPanel(){
+  $("tests-overlay").classList.add("open");
+  if($("tests-list").innerHTML===""){
+    await loadTests();
+  }
+}
+function closeTestsPanel(){ $("tests-overlay").classList.remove("open"); }
+
+document.querySelectorAll('[data-close="tests-overlay"]').forEach(b=>b.addEventListener("click",closeTestsPanel));
+$("tests-overlay").addEventListener("click",e=>{ if(e.target===$("tests-overlay")) closeTestsPanel(); });
+
+async function loadTests(){
+  const exam = state.student?.exam;
+  if(!exam) return;
+  setLoading(true,"Loading tests…");
+  try{
+    const tests = await apiFetch(`/api/tests?exam=${exam}`);
+    renderTestList(tests);
+  } catch(e){
+    $("tests-list").innerHTML=`<div class="empty-state"><div class="icon">⚠️</div><h4>Couldn't load tests</h4><p>${escHtml(e.message)}</p></div>`;
+  } finally{ setLoading(false); }
+}
+
+function renderTestList(tests){
+  if(!tests.length){
+    $("tests-list").innerHTML=`<div class="empty-state"><div class="icon">📭</div><h4>No tests yet</h4></div>`;
+    return;
+  }
+  $("tests-list").innerHTML = tests.map(t=>{
+    const breakdown = Object.entries(t.subject_breakdown||{})
+      .map(([s,n])=>`<span class="subject-pill">${escHtml(s)}: ${n}</span>`).join("");
+    return `
+    <div class="test-list-item">
+      <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+        <h4>${escHtml(t.name)}</h4>
+        <span class="badge badge-practice">Practice Test</span>
+      </div>
+      <p style="font-size:.86rem;color:var(--gray-600)">${escHtml(t.description||"")}</p>
+      <div class="subject-pills">${breakdown}</div>
+      <button class="btn btn-primary btn-sm" style="align-self:flex-start" onclick="startTest(${t.id})">Start Test →</button>
+    </div>`;
+  }).join("");
+}
+
+/* ══════════════════════════════════════════════════
+   IN-TEST
+══════════════════════════════════════════════════ */
+async function startTest(testId){
+  setLoading(true,"Loading test…");
+  try{
+    const data = await apiFetch(`/api/test/${testId}`);
+    state.currentTest = data;
+    state.testAnswers = {};
+    state.currentQ = 0;
+    closeTestsPanel();
+    openTestView();
+  } catch(e){
+    showToast("Failed to load test: "+e.message,"error");
+  } finally{ setLoading(false); }
+}
+
+function openTestView(){
+  const tv = $("test-view");
+  tv.classList.add("open");
+  $("tv-name").textContent = state.currentTest.test.name;
+  renderCurrentQuestion();
+}
+
+function closeTestView(){
+  $("test-view").classList.remove("open");
+}
+
+function renderCurrentQuestion(){
+  const qs = state.currentTest.questions;
+  const q = qs[state.currentQ];
+  const total = qs.length;
+  const idx = state.currentQ;
+
+  $("tv-counter").textContent = `Q ${idx+1} / ${total}`;
+  const pct = Math.max(5, ((idx+1)/total)*100);
+  $("tv-progress").style.width = pct+"%";
+
+  const answered = Object.keys(state.testAnswers).length;
+  $("tv-status").textContent = `${answered} of ${total} answered`;
+
+  const isLast = idx === total-1;
+  $("tv-next").classList.toggle("hidden", isLast);
+  $("tv-submit").classList.toggle("hidden", !isLast);
+  $("tv-prev").disabled = idx === 0;
+
+  const sel = state.testAnswers[q.id];
+  const opts = ["a","b","c","d"];
+  const optTexts = [q.option_a, q.option_b, q.option_c, q.option_d];
+
+  $("tv-content").innerHTML = `
+    <div class="question-block">
+      <div class="question-num">
+        <span class="badge ${subjectBadgeClass(q.subject)}">${escHtml(q.subject)}</span>
+        &nbsp;Q${q.question_number} · ${escHtml(q.topic)}
+      </div>
+      <div class="question-text">${escHtml(q.question_text)}</div>
+      <div class="options-list">
+        ${opts.map((o,i)=>`
+          <label class="option-label${sel===o?" selected":""}" data-qid="${q.id}" data-opt="${o}">
+            <input type="radio" name="opt_${q.id}" value="${o}" ${sel===o?"checked":""} style="display:none"/>
+            <span class="option-letter">${o.toUpperCase()}.</span>
+            <span>${escHtml(optTexts[i])}</span>
+          </label>
+        `).join("")}
+      </div>
+    </div>
+  `;
+
+  // Option click handler
+  $("tv-content").querySelectorAll(".option-label").forEach(lbl=>{
+    lbl.addEventListener("click",()=>{
+      const qid = lbl.dataset.qid;
+      const opt = lbl.dataset.opt;
+      state.testAnswers[qid] = opt;
+      $("tv-content").querySelectorAll(".option-label").forEach(l=>l.classList.remove("selected"));
+      lbl.classList.add("selected");
+      const answered2 = Object.keys(state.testAnswers).length;
+      $("tv-status").textContent = `${answered2} of ${qs.length} answered`;
+    });
+  });
+}
+
+$("tv-prev").addEventListener("click",()=>{
+  if(state.currentQ>0){ state.currentQ--; renderCurrentQuestion(); }
+});
+$("tv-next").addEventListener("click",()=>{
+  const qs = state.currentTest.questions;
+  if(state.currentQ < qs.length-1){ state.currentQ++; renderCurrentQuestion(); }
+});
+$("tv-submit").addEventListener("click", async ()=>{
+  const qs = state.currentTest.questions;
+  const answered = Object.keys(state.testAnswers).length;
+  const unanswered = qs.length - answered;
+  if(unanswered > 0){
+    if(!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+  }
+  await submitTest();
+});
+
+async function submitTest(){
+  setLoading(true,"Submitting test…");
+  try{
+    const result = await apiFetch("/api/submit_test",{
+      method:"POST",
+      body:JSON.stringify({
+        student_id: state.student.id,
+        test_id: state.currentTest.test.id,
+        answers: state.testAnswers,
+      })
+    });
+    state.lastResults = {result, testName: state.currentTest.test.name};
+    closeTestView();
+    renderResults(result, state.currentTest.test.name);
+    $("results-view").classList.add("open");
+  } catch(e){
+    showToast("Failed to submit: "+e.message,"error");
+  } finally{ setLoading(false); }
+}
+
+/* ══════════════════════════════════════════════════
+   RESULTS VIEW
+══════════════════════════════════════════════════ */
+function renderResults(r, testName){
+  $("rv-test-name").textContent = testName;
+  $("rv-score").textContent = r.score;
+  $("rv-total").textContent = "/"+r.total;
+  $("rv-correct").textContent = r.correct.length;
+  $("rv-incorrect").textContent = r.incorrect.length;
+  $("rv-blank").textContent = r.blank.length;
+
+  const weakBlock = $("rv-weak-block");
+  if(r.weak_topics && r.weak_topics.length){
+    weakBlock.classList.remove("hidden");
+    $("rv-weak-list").innerHTML = r.weak_topics.map(w=>
+      `<span class="weak-topic-pill">${escHtml(w.topic)} (${escHtml(w.subject)}, ${w.wrong_count} wrong)</span>`
+    ).join("");
+  } else {
+    weakBlock.classList.add("hidden");
+  }
+
+  // Build review list: incorrect first, then blank, then correct
+  const all = [...r.incorrect.map(q=>({...q,status:"incorrect"})),
+               ...r.blank.map(q=>({...q,status:"blank"})),
+               ...r.correct.map(q=>({...q,status:"correct"}))];
+
+  $("rv-review-list").innerHTML = all.map(q=>{
+    const opts = [{key:"a",text:q.option_a},{key:"b",text:q.option_b},{key:"c",text:q.option_c},{key:"d",text:q.option_d}];
+    const statusLabel = q.status==="correct"?"✅ Correct":q.status==="incorrect"?"❌ Incorrect":"⬜ Not Answered";
+    return `
+    <div class="review-item ${q.status}">
+      <div class="review-label ${q.status}">${statusLabel} · Q${q.question_number} · <span class="badge ${subjectBadgeClass(q.subject)}" style="font-size:.72rem">${escHtml(q.subject)}</span></div>
+      <div class="review-q">${escHtml(q.question_text)}</div>
+      <div class="review-options">
+        ${opts.map(o=>`
+          <div class="review-option${o.key===q.correct_option?" is-correct":""}${o.key===q.selected&&o.key!==q.correct_option?" is-selected-wrong":""}">
+            <strong>${o.key.toUpperCase()}.</strong> ${escHtml(o.text)}
+            ${o.key===q.correct_option?" ✓":""}
+            ${o.key===q.selected&&o.key!==q.correct_option?" ✗ Your answer":""}
+          </div>
+        `).join("")}
+      </div>
+      ${q.explanation?`<div class="review-explanation">💡 ${escHtml(q.explanation)}</div>`:""}
+      <button class="btn btn-ghost btn-sm" style="margin-top:.5rem" onclick='openDoubt("${escHtml(q.topic)} — ${escHtml(q.question_text.substring(0,80))}")'>💬 Ask about this</button>
+    </div>`;
+  }).join("");
+}
+
+$("rv-doubt-btn").addEventListener("click",()=>openDoubt());
+$("rv-home-btn").addEventListener("click",()=>{
+  $("results-view").classList.remove("open");
+  $("tests-list").innerHTML=""; // refresh test list on next open
+});
+
+/* ══════════════════════════════════════════════════
+   DOUBT SOLVER
+══════════════════════════════════════════════════ */
+function openDoubt(prefill=""){
+  $("doubt-panel").classList.add("open");
+  $("doubt-backdrop").classList.add("open");
+  if(prefill){
+    $("doubt-input").value = prefill;
+    $("doubt-input").focus();
+  } else {
+    $("doubt-input").focus();
+  }
+}
+function closeDoubt(){
+  $("doubt-panel").classList.remove("open");
+  $("doubt-backdrop").classList.remove("open");
+}
+
+$("doubt-fab").addEventListener("click",()=>openDoubt());
+$("doubt-close-btn").addEventListener("click",closeDoubt);
+$("doubt-backdrop").addEventListener("click",closeDoubt);
+
+$("doubt-send").addEventListener("click",sendDoubt);
+$("doubt-input").addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDoubt(); }
+});
+$("doubt-input").addEventListener("input",function(){
+  this.style.height="auto";
+  this.style.height=Math.min(this.scrollHeight,120)+"px";
+});
+
+function appendMsg(text, role, extra=""){
+  const msgs = $("doubt-messages");
+  const d = document.createElement("div");
+  d.className = `msg ${role} ${extra}`;
+  d.innerHTML = text.replace(/\n/g,"<br/>");
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+  return d;
+}
+
+function showTyping(){
+  const msgs = $("doubt-messages");
+  const d = document.createElement("div");
+  d.className="msg-typing";
+  d.id="typing-indicator";
+  d.innerHTML=`<div class="typing-dots"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function hideTyping(){ $("typing-indicator")?.remove(); }
+
+async function sendDoubt(){
+  const inp = $("doubt-input");
+  const q = inp.value.trim();
+  if(!q) return;
+
+  inp.value="";
+  inp.style.height="auto";
+  $("doubt-send").disabled=true;
+
+  appendMsg(escHtml(q),"user");
+  showTyping();
+
+  try{
+    const data = await apiFetch("/api/doubt",{
+      method:"POST",
+      body:JSON.stringify({question:q, student_id:state.student?.id})
+    });
+    hideTyping();
+    appendMsg(escHtml(data.answer),"ai");
+  } catch(e){
+    hideTyping();
+    appendMsg("⚠️ "+escHtml(e.message||"AI service error. Check GEMINI_API_KEY in Replit Secrets."),"ai","error-msg");
+  } finally{
+    $("doubt-send").disabled=false;
+    inp.focus();
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   ESCAPE KEY CLOSES PANELS
+══════════════════════════════════════════════════ */
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  if($("doubt-panel").classList.contains("open")){ closeDoubt(); return; }
+  if($("results-view").classList.contains("open")){ $("results-view").classList.remove("open"); return; }
+  if($("test-view").classList.contains("open")){
+    if(confirm("Exit test? Progress will be lost.")){ closeTestView(); openTestsPanel(); }
+    return;
+  }
+  if($("tests-overlay").classList.contains("open")){ closeTestsPanel(); return; }
+  if($("pyq-overlay").classList.contains("open")){ closePyqPanel(); return; }
+});
+
+/* ══════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════ */
+(function boot(){
+  const student = loadStudent();
+  if(student && student.id && student.name && student.exam && student.class_level){
+    state.student = student;
+    enterHome(student);
+  }
+})();
+</script>
+</body>
+</html>
