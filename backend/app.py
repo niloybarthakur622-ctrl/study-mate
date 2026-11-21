@@ -80,9 +80,28 @@ def get_db():
     return conn
 
 
+# ─── WSGI PATH MIDDLEWARE FOR VERCEL ──────────────────────────────────────────
+
+class VercelPathFixer:
+    """Restores the original request path if Vercel serverless rewrites it."""
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        matched = environ.get('HTTP_X_MATCHED_PATH') or environ.get('HTTP_X_FORWARDED_URI')
+        if matched:
+            clean = matched.split('?')[0]
+            if clean and not clean.endswith('/index') and not clean.endswith('/index.py'):
+                environ['PATH_INFO'] = clean
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelPathFixer(app.wsgi_app)
+
+
 # ─── LOGIN ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/login", methods=["POST"])
+@app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
     name = (data.get("name") or "").strip()
@@ -117,6 +136,7 @@ def login():
 # ─── STUDENT ──────────────────────────────────────────────────────────────────
 
 @app.route("/api/student/<int:student_id>", methods=["GET"])
+@app.route("/student/<int:student_id>", methods=["GET"])
 def get_student(student_id):
     conn = get_db()
     row = conn.execute("SELECT * FROM students WHERE id = ?", (student_id,)).fetchone()
@@ -129,6 +149,7 @@ def get_student(student_id):
 # ─── PYQs ─────────────────────────────────────────────────────────────────────
 
 @app.route("/api/pyqs", methods=["GET"])
+@app.route("/pyqs", methods=["GET"])
 def get_pyqs():
     exam = request.args.get("exam", "").upper()
     if exam not in ("NEET", "JEE"):
@@ -145,6 +166,7 @@ def get_pyqs():
 # ─── TESTS ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/tests", methods=["GET"])
+@app.route("/tests", methods=["GET"])
 def get_tests():
     exam = request.args.get("exam", "").upper()
     if exam not in ("NEET", "JEE"):
@@ -168,6 +190,7 @@ def get_tests():
 
 
 @app.route("/api/test/<int:test_id>", methods=["GET"])
+@app.route("/test/<int:test_id>", methods=["GET"])
 def get_test(test_id):
     conn = get_db()
     test = conn.execute("SELECT * FROM tests WHERE id = ?", (test_id,)).fetchone()
@@ -189,6 +212,7 @@ def get_test(test_id):
 # ─── SUBMIT TEST ──────────────────────────────────────────────────────────────
 
 @app.route("/api/submit_test", methods=["POST"])
+@app.route("/submit_test", methods=["POST"])
 def submit_test():
     data = request.get_json()
     student_id = data.get("student_id")
@@ -291,6 +315,7 @@ def submit_test():
 # ─── RESULTS ──────────────────────────────────────────────────────────────────
 
 @app.route("/api/results/<int:student_id>", methods=["GET"])
+@app.route("/results/<int:student_id>", methods=["GET"])
 def get_results(student_id):
     conn = get_db()
     rows = conn.execute(
@@ -308,6 +333,7 @@ def get_results(student_id):
 # ─── DOUBT SOLVER ─────────────────────────────────────────────────────────────
 
 @app.route("/api/doubt", methods=["POST"])
+@app.route("/doubt", methods=["POST"])
 def doubt_solver():
     data = request.get_json()
     question = (data.get("question") or "").strip()
@@ -364,6 +390,32 @@ def doubt_solver():
         return jsonify({"error": f"AI service error: {str(e)}"}), 503
 
     return jsonify({"answer": answer})
+
+
+# ─── VERCEL DIRECT CATCH-ALL ROUTER ───────────────────────────────────────────
+
+@app.route("/api/index", methods=["GET", "POST", "PUT", "DELETE"])
+@app.route("/api", methods=["GET", "POST", "PUT", "DELETE"])
+def vercel_dispatcher():
+    """Fallback dispatcher if Vercel forwards requests directly to /api/index"""
+    matched = request.headers.get("x-matched-path") or request.headers.get("x-forwarded-uri") or ""
+    clean = matched.split("?")[0]
+
+    if clean in ("/api/login", "/login") and request.method == "POST":
+        return login()
+    elif clean in ("/api/pyqs", "/pyqs") and request.method == "GET":
+        return get_pyqs()
+    elif clean in ("/api/tests", "/tests") and request.method == "GET":
+        return get_tests()
+    elif clean in ("/api/submit_test", "/submit_test") and request.method == "POST":
+        return submit_test()
+    elif clean in ("/api/doubt", "/doubt") and request.method == "POST":
+        return doubt_solver()
+    return jsonify({
+        "status": "StudyMate API Online",
+        "path": request.path,
+        "matched": matched
+    }), 200
 
 
 if __name__ == "__main__":
